@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  @apply bg-[#f6f6f6] text-[#290521];
+
+  overscroll-behavior: none;
+}
