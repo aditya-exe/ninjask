@@ -37,9 +37,6 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
-  pages: {
-    signIn: "/login",
-  },
   providers: [
     DiscordProvider({
       clientId: env.DISCORD_CLIENT_ID,
@@ -54,9 +51,6 @@ export const authOptions: NextAuthOptions = {
         id: user.id,
       },
     }),
-    redirect() {
-      return "/dashboard";
-    },
   },
 };
 
