@@ -6,6 +6,7 @@ import Button from "@/components/ui/Button";
 import { toast } from "react-hot-toast";
 import CreatePostWizard from "@/components/create-post-wizard";
 import Sidebar from "@/components/sidebar";
+import Feed from "@/components/feed";
 
 const Home: NextPage = () => {
   const { data: session, status } = useSession();
@@ -25,7 +26,7 @@ const Home: NextPage = () => {
 
   return (
     <div className="flex">
-      <Sidebar />
+      <Sidebar username={session?.user.name as string} />
       <PageLayout>
         <div className="flex border-b-2 border-[#685582]">
           {!session && (
@@ -38,6 +39,7 @@ const Home: NextPage = () => {
           )}
           {session && <CreatePostWizard />}
         </div>
+        <Feed />
       </PageLayout>
     </div>
   );

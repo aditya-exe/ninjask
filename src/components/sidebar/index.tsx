@@ -8,33 +8,35 @@ import Button from "../ui/Button";
 import { signOut, useSession } from "next-auth/react";
 import LoadingSpinner from "../ui/Loading-Spinner";
 import Image from "next/image";
-import useDarkMode from "@/utils/useDarkMode";
+// import useDarkMode from "@/utils/useDarkMode";
 import { useRouter } from "next/router";
 
-// interface SidebarProps {}
+interface SidebarProps {
+  username: string;
+}
 
-const sidebarOptions: SidebarOption[] = [
-  {
-    id: 1,
-    name: "Buzz",
-    href: "/buzz",
-    Icon: "Send",
-  },
-  {
-    id: 2,
-    name: "Profle",
-    href: "/",
-    Icon: "User",
-  },
-  {
-    id: 3,
-    name: "Stars",
-    href: "/stars",
-    Icon: "Star",
-  },
-];
+const Sidebar: FC<SidebarProps> = ({ username }) => {
+  const sidebarOptions: SidebarOption[] = [
+    {
+      id: 1,
+      name: "Buzz",
+      href: "/buzz",
+      Icon: "Send",
+    },
+    {
+      id: 2,
+      name: "Profle",
+      href: `/${username}`,
+      Icon: "User",
+    },
+    {
+      id: 3,
+      name: "Stars",
+      href: `/${username}/stars`,
+      Icon: "Star",
+    },
+  ];
 
-const Sidebar: FC = ({}) => {
   const { data: session, status } = useSession();
   // const [dark, setDark] = useDarkMode();
   const router = useRouter();
@@ -50,7 +52,7 @@ const Sidebar: FC = ({}) => {
         className="flex h-[101.5px] items-center gap-x-4 border-b-2 border-[#685582] p-4"
       >
         <Icons.Logo />
-        <p className="text-2xl font-extrabold tracking-wide">Ninjask</p>
+        <p className="text-3xl font-extrabold tracking-wide">Ninjask</p>
       </Link>
 
       <div className="flex shrink-0 grow flex-col justify-between p-4">
@@ -60,9 +62,12 @@ const Sidebar: FC = ({}) => {
             return (
               <li
                 key={option.id}
-                className="mb-5 w-full rounded-md p-4 hover:border-2 hover:border-[#685582] hover:text-[#685582]"
+                className="mb-5 w-full rounded-md hover:border-2 hover:border-[#685582] hover:text-[#685582]"
               >
-                <Link href={option.href} className="flex items-center gap-x-4">
+                <Link
+                  href={option.href}
+                  className="flex h-full w-full p-4 rounded-md items-center gap-x-4"
+                >
                   <span className="hover:text-[#685582]">
                     <Icon className="h-8 w-8" />
                   </span>

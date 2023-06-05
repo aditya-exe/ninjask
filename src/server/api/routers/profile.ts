@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 
 export const profileRouter = createTRPCRouter({
@@ -47,4 +51,15 @@ export const profileRouter = createTRPCRouter({
 
       return user;
     }),
+  getStarsByUser: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+
+    const stars = await ctx.prisma.bookmark.findMany({
+      where: {
+        userId,
+      },
+    });
+
+    return stars;
+  }),
 });

@@ -6,6 +6,7 @@ import {
   Sun,
   Moon,
   LogOut,
+  Trash2,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -25,6 +26,7 @@ export const Icons = {
   Sun,
   Moon,
   LogOut,
+  Trash2,
 };
 
 export type Icon = keyof typeof Icons;
