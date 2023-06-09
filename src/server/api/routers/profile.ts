@@ -5,6 +5,7 @@ import {
   publicProcedure,
 } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
+import { cx } from "class-variance-authority";
 
 export const profileRouter = createTRPCRouter({
   findUserByUsername: publicProcedure
@@ -62,4 +63,43 @@ export const profileRouter = createTRPCRouter({
 
     return stars;
   }),
+  getUserByUsername: publicProcedure
+    .input(
+      z.object({
+        username: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const { username } = input;
+      const user = await ctx.prisma.user.findFirst({
+        where: {
+          name: username,
+        },
+      });
+
+      // if (!user) {
+      //   return new TRPCError({ code: "BAD_REQUEST" });
+      // }
+
+      return user;
+    }),
+  changeBio: protectedProcedure
+    .input(
+      z.object({
+        text: z.string().min(1),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = ctx.session.user;
+      const bio = await ctx.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          bio: input.text,
+        },
+      });
+
+      return bio;
+    }),
 });

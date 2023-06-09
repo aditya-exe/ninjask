@@ -34,7 +34,9 @@ const Home: NextPage = () => {
               <div className="rounded p-2 text-white">
                 <Button onClick={handleSignIn}>Sign In</Button>
               </div>
-              <span className="text-xl font-bold">Sign In to send emojis!</span>
+              <span className="text-xl font-bold">
+                Sign In to send messages!
+              </span>
             </div>
           )}
           {session && <CreatePostWizard />}

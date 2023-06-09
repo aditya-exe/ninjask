@@ -51,8 +51,12 @@ const StarredPost = ({ star }: { star: Bookmark }) => {
     postId: star.postId,
   });
 
-  if (isLoading || !post) {
+  if (isLoading) {
     return <LoadingSpinner />;
+  }
+
+  if (!post) {
+    return <p>No stars yet!</p>;
   }
 
   return (

@@ -58,6 +58,7 @@ model User {
     sessions      Session[]
     Post          Post[]
     Bookmarks     Bookmark[]
+    bio           String     @default("")
 }
 
 model VerificationToken {

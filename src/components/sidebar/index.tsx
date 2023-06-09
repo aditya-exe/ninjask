@@ -12,7 +12,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 
 interface SidebarProps {
-  username: string;
+  username: string | null | undefined;
 }
 
 const Sidebar: FC<SidebarProps> = ({ username }) => {
@@ -25,14 +25,14 @@ const Sidebar: FC<SidebarProps> = ({ username }) => {
     },
     {
       id: 2,
-      name: "Profle",
-      href: `/${username}`,
+      name: "Profile",
+      href: `/${username as string}`,
       Icon: "User",
     },
     {
       id: 3,
       name: "Stars",
-      href: `/${username}/stars`,
+      href: `/${username as string}/stars`,
       Icon: "Star",
     },
   ];
@@ -52,33 +52,43 @@ const Sidebar: FC<SidebarProps> = ({ username }) => {
         className="flex h-[101.5px] items-center gap-x-4 border-b-2 border-[#685582] p-4"
       >
         <Icons.Logo />
-        <p className="text-3xl font-extrabold tracking-wide">Ninjask</p>
+        <p className="text-3xl font-extrabold tracking-wide hover:text-[#685582]">
+          Ninjask
+        </p>
       </Link>
 
       <div className="flex shrink-0 grow flex-col justify-between p-4">
         <ul role="list" className="mt-2 p-2 ">
-          {sidebarOptions.map((option) => {
-            const Icon = Icons[option.Icon];
-            return (
-              <li
-                key={option.id}
-                className="mb-5 w-full rounded-md hover:border-2 hover:border-[#685582] hover:text-[#685582]"
-              >
-                <Link
-                  href={option.href}
-                  className="flex h-full w-full p-4 rounded-md items-center gap-x-4"
+          {username &&
+            sidebarOptions.map((option) => {
+              const Icon = Icons[option.Icon];
+              return (
+                <li
+                  key={option.id}
+                  className="mb-5 w-full rounded-md hover:border-2 hover:border-[#685582] hover:text-[#685582]"
                 >
-                  <span className="hover:text-[#685582]">
-                    <Icon className="h-8 w-8" />
-                  </span>
+                  <Link
+                    href={option.href}
+                    className="flex h-full w-full items-center gap-x-4 rounded-md p-4"
+                  >
+                    <span className="hover:text-[#685582]">
+                      <Icon className="h-8 w-8" />
+                    </span>
 
-                  <span className="truncate text-xl font-bold">
-                    {option.name}
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
+                    <span className="truncate text-xl font-bold">
+                      {option.name}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          {!username && (
+            <div className="flex h-full w-full items-center justify-center">
+              <p className="text-xl font-bold">
+                Sign In to access all features
+              </p>
+            </div>
+          )}
         </ul>
 
         <div className="flex flex-col items-center justify-center gap-y-4">

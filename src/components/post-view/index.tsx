@@ -16,6 +16,7 @@ interface PostProps {
   text: string;
   authorId: string;
   createdAt: Date;
+  userId: string;
 }
 
 const Post: FC<PostProps> = ({ authorId, text, createdAt, postId }) => {
@@ -51,7 +52,10 @@ const Post: FC<PostProps> = ({ authorId, text, createdAt, postId }) => {
   }
 
   return (
-    <div className="flex gap-x-4 rounded-2xl border-2 border-[#e62a6f] bg-[#685582] p-4 shadow-md">
+    <div
+      className="flex gap-x-4 rounded-2xl border-2 border-[#e62a6f] bg-[#685582]
+    bg-transparent text-black p-4 shadow-md"
+    >
       <div className="w-fit">
         <Image
           src={data?.image as string}
@@ -68,18 +72,18 @@ const Post: FC<PostProps> = ({ authorId, text, createdAt, postId }) => {
         <div className="flex items-center">
           <Link
             href={`/${data?.name as string}`}
-            className="text-lg font-bold  text-white"
+            className="text-lg font-bold"
           >
             {`@${data?.name as string} `}
           </Link>
-          <span className="font-thin text-white">{` · ${dayjs(
+          <span className="font-thin">{` · ${dayjs(
             createdAt
           ).fromNow()}`}</span>
         </div>
-        <p className="text-lg text-white">{text}</p>
+        <p className="text-lg">{text}</p>
 
         <div
-          className="mt-1 flex justify-end gap-x-4 text-white"
+          className="mt-1 flex justify-end gap-x-4"
           onClick={handleStar}
         >
           <Icons.Star className="cursor-pointer hover:text-[#e62a6f]" />

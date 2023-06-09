@@ -4,8 +4,12 @@ import LoadingSpinner from "../ui/Loading-Spinner";
 import Post from "../post-view";
 import { useSession } from "next-auth/react";
 
-const Feed: FC = () => {
-  const { data, isLoading } = api.post.getAll.useQuery();
+interface ProfileFeedProps {
+  userId: string;
+}
+
+const ProfileFeed: FC<ProfileFeedProps> = ({ userId }) => {
+  const { data, isLoading } = api.post.getAllByUser.useQuery({ userId });
   const { data: session } = useSession();
 
   if (isLoading) {
@@ -31,4 +35,4 @@ const Feed: FC = () => {
   );
 };
 
-export default Feed;
+export default ProfileFeed;

@@ -5,6 +5,8 @@ specifiers:
   '@mantine/hooks': ^6.0.13
   '@next-auth/prisma-adapter': ^1.0.5
   '@prisma/client': ^4.14.0
+  '@radix-ui/react-dialog': ^1.0.4
+  '@radix-ui/react-label': ^2.0.2
   '@radix-ui/react-switch': ^1.0.3
   '@t3-oss/env-nextjs': ^0.3.1
   '@tanstack/react-query': ^4.29.7
@@ -51,6 +53,8 @@ dependencies:
   '@mantine/hooks': 6.0.13_react@18.2.0
   '@next-auth/prisma-adapter': 1.0.6_2damktpyaopg2xe7jnksbcpubi
   '@prisma/client': 4.15.0_prisma@4.15.0
+  '@radix-ui/react-dialog': 1.0.4_h73yytdk5ntplvft5jzh7k37ce
+  '@radix-ui/react-label': 2.0.2_h73yytdk5ntplvft5jzh7k37ce
   '@radix-ui/react-switch': 1.0.3_h73yytdk5ntplvft5jzh7k37ce
   '@t3-oss/env-nextjs': 0.3.1_z34kx2cq3kivpffalfeqk2ugre
   '@tanstack/react-query': 4.29.12_biqbaboplfbrettd7655fr4n2y
