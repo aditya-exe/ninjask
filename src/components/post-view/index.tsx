@@ -16,7 +16,7 @@ interface PostProps {
   text: string;
   authorId: string;
   createdAt: Date;
-  userId: string;
+  userId?: string;
 }
 
 const Post: FC<PostProps> = ({ authorId, text, createdAt, postId }) => {
