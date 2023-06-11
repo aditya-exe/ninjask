@@ -1,15 +1,13 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { type FC } from "react";
 import Link from "next/link";
 import { Icons } from "../icons";
 import { type SidebarOption } from "@/types";
-import { Switch } from "../ui/Switch";
 import Button from "../ui/Button";
 import { signOut, useSession } from "next-auth/react";
 import LoadingSpinner from "../ui/Loading-Spinner";
 import Image from "next/image";
-// import useDarkMode from "@/utils/useDarkMode";
 import { useRouter } from "next/router";
+import LightModeToggle from "../ui/light-mode-toggle";
 
 interface SidebarProps {
   username: string | null | undefined;
@@ -38,7 +36,6 @@ const Sidebar: FC<SidebarProps> = ({ username }) => {
   ];
 
   const { data: session, status } = useSession();
-  // const [dark, setDark] = useDarkMode();
   const router = useRouter();
 
   if (status === "loading") {
@@ -46,7 +43,7 @@ const Sidebar: FC<SidebarProps> = ({ username }) => {
   }
 
   return (
-    <div className="flex min-h-screen w-[450px] flex-col">
+    <div className="flex min-h-screen w-[450px] flex-col ">
       <Link
         href="/"
         className="flex h-[101.5px] items-center gap-x-4 border-b-2 border-[#685582] p-4"
@@ -93,9 +90,7 @@ const Sidebar: FC<SidebarProps> = ({ username }) => {
 
         <div className="flex flex-col items-center justify-center gap-y-4">
           <div className="flex w-full items-center justify-center gap-x-3 p-4">
-            <Icons.Sun />
-            <Switch />
-            <Icons.Moon />
+            <LightModeToggle />
           </div>
           {session && (
             <div className="flex w-full items-center justify-between gap-x-5 p-4">

@@ -7,8 +7,8 @@ import { type FC } from "react";
 import { api } from "@/utils/api";
 import Image from "next/image";
 import BioModal from "@/components/bio-modal";
-import Feed from "@/components/feed";
 import ProfileFeed from "@/components/profile-feed";
+import Head from "next/head";
 
 // interface ProfilePageProps {
 
@@ -37,45 +37,50 @@ const ProfilePage: FC = ({}) => {
   const canEdit = session?.user.id === userToLoad.id;
 
   return (
-    <div className="flex">
-      <Sidebar username={session?.user.name as string} />
-      <PageLayout>
-        <div className="flex border-b-2 border-[#685582]">
-          <div className="flex min-h-[99.9px] w-full items-center justify-start gap-x-4 p-4">
-            <span className="text-4xl font-bold">{username}</span>
+    <>
+      <Head>
+        <title>{`@${username as string}`}</title>
+      </Head>
+      <main className="flex dark:bg-gray-900 dark:text-white">
+        <Sidebar username={session?.user.name as string} />
+        <PageLayout>
+          <div className="flex border-b-2 border-[#685582]">
+            <div className="flex min-h-[99.9px] w-full items-center justify-start gap-x-4 p-4">
+              <span className="text-4xl font-bold">{username}</span>
+            </div>
           </div>
-        </div>
 
-        <div className="flex border-b-2 border-[#685582] p-4">
-          <div className="mr-3 p-2">
-            <Image
-              src={userToLoad.image as string}
-              alt={`${userToLoad.name as string}'s Profile Image`}
-              height={56}
-              width={56}
-              // fill
-              className="h-36 w-36 rounded-full ring-2 ring-[#685582]"
-              referrerPolicy="no-referrer"
-            />
+          <div className="flex border-b-2 border-[#685582] p-4">
+            <div className="mr-3 p-2">
+              <Image
+                src={userToLoad.image as string}
+                alt={`${userToLoad.name as string}'s Profile Image`}
+                height={56}
+                width={56}
+                // fill
+                className="h-36 w-36 rounded-full ring-2 ring-[#685582]"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            <div className="flex w-1/2 grow items-start p-2">
+              {userToLoad.bio.length > 0 ? (
+                <div className="mt-4 flex flex-col gap-y-4">
+                  <p className="text-xl font-bold">About @{username} :-</p>
+                  <p className="ml-2 text-lg font-semibold">{userToLoad.bio}</p>
+                  {canEdit && <BioModal edit={true} />}
+                </div>
+              ) : (
+                <BioModal edit={false} />
+              )}
+            </div>
           </div>
-          <div className="flex w-1/2 grow items-start p-2">
-            {userToLoad.bio.length > 0 ? (
-              <div className="mt-4 flex flex-col gap-y-4">
-                <p className="text-xl font-bold">About @{username} :-</p>
-                <p className="ml-2 text-lg font-semibold">{userToLoad.bio}</p>
-                {canEdit && <BioModal edit={true} />}
-              </div>
-            ) : (
-              <BioModal edit={false} />
-            )}
-          </div>
-        </div>
 
-        <div>
-          <ProfileFeed userId={userToLoad.id} />
-        </div>
-      </PageLayout>
-    </div>
+          <div>
+            <ProfileFeed userId={userToLoad.id} />
+          </div>
+        </PageLayout>
+      </main>
+    </>
   );
 };
 

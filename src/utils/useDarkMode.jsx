@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { useEffect, useState } from "react";
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+import { useEffect, useState } from 'react';
 
-const useLocalStorage = (key: string, initialValue?: undefined) => {
+// @ts-ignore
+const useLocalStorage = (key, initialValue) => {
   const [storedValue, setStoredValue] = useState(() => {
     try {
       const item = window.localStorage.getItem(key);
@@ -14,7 +13,8 @@ const useLocalStorage = (key: string, initialValue?: undefined) => {
     }
   });
 
-  const setValue = (value: (storedValue: string) => string) => {
+  // @ts-ignore
+  const setValue = (value) => {
     try {
       const valueToStore = value instanceof Function ? value(storedValue) : value;
 
@@ -29,11 +29,12 @@ const useLocalStorage = (key: string, initialValue?: undefined) => {
 };
 
 const useDarkMode = () => {
-  const [enabled, setEnabled] = useLocalStorage("dark-theme");
-  const isEnabled = enabled;
+  const [enabled, setEnabled] = useLocalStorage('dark-theme');
+  // @ts-ignore
+  const isEnabled = typeof enabledState === 'undefined' && enabled;
 
   useEffect(() => {
-    const className = "dark";
+    const className = 'dark';
     const bodyClass = window.document.body.classList;
 
     isEnabled ? bodyClass.add(className) : bodyClass.remove(className);

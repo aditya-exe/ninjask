@@ -28,6 +28,6 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.mjs"
-  ],
+, "src/utils/useDarkMode.jsx"  ],
   "exclude": ["node_modules"]
 }

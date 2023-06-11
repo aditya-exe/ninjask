@@ -1,6 +1,5 @@
 import {
   Send,
-  type LucideProps,
   User,
   Star,
   Sun,

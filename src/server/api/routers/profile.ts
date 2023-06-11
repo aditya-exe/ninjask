@@ -5,7 +5,6 @@ import {
   publicProcedure,
 } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { cx } from "class-variance-authority";
 
 export const profileRouter = createTRPCRouter({
   findUserByUsername: publicProcedure

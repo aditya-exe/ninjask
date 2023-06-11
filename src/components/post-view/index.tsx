@@ -54,7 +54,7 @@ const Post: FC<PostProps> = ({ authorId, text, createdAt, postId }) => {
   return (
     <div
       className="flex gap-x-4 rounded-2xl border-2 border-[#e62a6f] bg-[#685582]
-    bg-transparent text-black p-4 shadow-md"
+    bg-transparent text-black dark:text-white p-4 shadow-md"
     >
       <div className="w-fit">
         <Image
