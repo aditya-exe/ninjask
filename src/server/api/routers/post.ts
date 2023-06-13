@@ -31,6 +31,7 @@ export const postRouter = createTRPCRouter({
         createdAt: "desc",
       },
     });
+
     return posts;
   }),
   deleteByPostId: protectedProcedure
@@ -108,5 +109,40 @@ export const postRouter = createTRPCRouter({
       });
 
       return posts;
+    }),
+  isBookmarked: protectedProcedure
+    .input(
+      z.object({
+        postId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const post = await ctx.prisma.bookmark.findFirst({
+        where: {
+          postId: input.postId,
+          userId: ctx.session.user.id,
+        },
+      });
+
+      if (!post) {
+        return false;
+      }
+      return true;
+    }),
+  unstarPost: protectedProcedure
+    .input(
+      z.object({
+        postId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // const userId = ctx.session.user.id;
+      const deletedBookmark = await ctx.prisma.bookmark.delete({
+        where: {
+          postId: input.postId,
+        },
+      });
+
+      return deletedBookmark;
     }),
 });

@@ -62,7 +62,7 @@ const Sidebar: FC<SidebarProps> = ({ username }) => {
               return (
                 <li
                   key={option.id}
-                  className="mb-5 w-full rounded-md hover:border-2 hover:border-[#685582] hover:text-[#685582]"
+                  className="mb-5 w-full rounded-md hover:ring-2 hover:ring-[#685582] hover:text-[#685582]"
                 >
                   <Link
                     href={option.href}

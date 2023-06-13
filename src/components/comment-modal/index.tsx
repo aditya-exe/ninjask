@@ -7,18 +7,14 @@ import {
   DialogFooter,
 } from "../ui/Dialog";
 import { Label } from "../ui/Label";
-import { Pencil } from "lucide-react";
 import { useState, type FC } from "react";
 import Button from "../ui/Button";
 import { Textarea } from "../ui/TextArea";
 import { api } from "@/utils/api";
 import LoadingSpinner from "../ui/Loading-Spinner";
+import { Icons } from "../icons";
 
-interface BioModalProps {
-  edit: boolean;
-}
-
-const BioModal: FC<BioModalProps> = ({ edit }) => {
+const CommentModal: FC = () => {
   const [input, setInput] = useState("");
   const ctx = api.useContext();
   const { mutate, isLoading } = api.profile.changeBio.useMutation({
@@ -39,31 +35,24 @@ const BioModal: FC<BioModalProps> = ({ edit }) => {
     <div className="flex items-center gap-x-4 dark:text-white">
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant={"ghost"} className="">
-            <Pencil />
-          </Button>
+          <Icons.MessageSquare className="cursor-pointer rounded-full hover:text-[#e62a6f]" />
         </DialogTrigger>
-        <p className="select-none text-xl  font-bold">
-          {edit ? "Edit" : "Add a bio!"}
-        </p>
+
         <DialogContent>
           <DialogHeader className="dark:text-gray-400">
-            {edit ? "Edit" : "Add a bio!"}
+            Add a Comment!
           </DialogHeader>
-          <DialogDescription className="dark:text-gray-400">
-            Make changes to your profile here. Click save when you&apos;re done.
-          </DialogDescription>
           <div className="flex flex-col items-start">
             <Label htmlFor="bio" className="mb-2 text-right dark:text-gray-400">
-              Bio
+              Comment
             </Label>
             <Textarea
               onChange={(e) => setInput(e.target.value)}
-              placeholder={"Edit your bio here!"}
+              placeholder={"Type here!"}
             />
           </div>
           <DialogFooter>
-            <Button onClick={handleSubmit}>Save changes</Button>
+            <Button onClick={handleSubmit}>Comment</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -71,4 +60,4 @@ const BioModal: FC<BioModalProps> = ({ edit }) => {
   );
 };
 
-export default BioModal;
+export default CommentModal;

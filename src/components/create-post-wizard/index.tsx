@@ -9,6 +9,7 @@ import { api } from "@/utils/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import { useRouter } from "next/router";
+import { Textarea } from "../ui/TextArea";
 
 const formSchema = z.object({
   text: z.string().min(1),
@@ -55,13 +56,12 @@ const CreatePostWizard: FC = () => {
           void router.push(`/${session?.user.name as string}`);
         }}
       />
-      <form className={"w-full"} onSubmit={hookFormSubmit(onSubmit)}>
+      <form className={"w-full h-full"} onSubmit={hookFormSubmit(onSubmit)}>
         <div className="flex gap-x-4">
-          <input
+          <Textarea
             {...register("text")}
-            type="text"
-            placeholder="Type some emojis!"
-            className="grow rounded border-2 border-[#685582] bg-transparent p-2 outline-none"
+            placeholder="Type here!"
+            className="grow rounded border-2 border-[#685582] bg-transparent p-2 outline-none placeholder:text-lg text-lg"
             disabled={isPosting}
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -75,7 +75,7 @@ const CreatePostWizard: FC = () => {
             }}
           />
           <Button
-            className={"min-w-[100px] p-2 font-bold tracking-wider"}
+            className={"min-w-[100px] min-h-[60px] p-4 font-bold text-lg tracking-wider"}
             isLoading={isPosting}
             type="submit"
           >

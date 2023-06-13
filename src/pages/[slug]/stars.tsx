@@ -62,7 +62,7 @@ const StarredPost = ({ star }: { star: Bookmark }) => {
   }
 
   if (!post) {
-    return <p>No stars yet!</p>;
+    return <div />;
   }
 
   return (
@@ -70,7 +70,8 @@ const StarredPost = ({ star }: { star: Bookmark }) => {
       text={post.text}
       authorId={post.authorId}
       postId={star.postId}
-      createdAt={post?.createdAt}
+      createdAt={post.createdAt}
+      bookmark={true}
     />
   );
 };
