@@ -37,6 +37,9 @@ const Post: FC<PostProps> = ({
   const { data: isBookmarked } = api.post.isBookmarked.useQuery({
     postId,
   });
+  const { data: isLiked } = api.post.isLiked.useQuery({
+    postId,
+  });
   const { mutate: deletePost } = api.post.deleteByPostId.useMutation({
     onSuccess: () => {
       void ctx.post.getAll.invalidate();
@@ -52,6 +55,16 @@ const Post: FC<PostProps> = ({
     onSuccess: () => {
       void ctx.profile.getStarsByUser.invalidate();
       void ctx.post.isBookmarked.invalidate();
+    },
+  });
+  const { mutate: likePost } = api.post.likePost.useMutation({
+    onSuccess: () => {
+      void ctx.post.isLiked.invalidate();
+    },
+  });
+  const { mutate: unlikePost } = api.post.unlikePost.useMutation({
+    onSuccess: () => {
+      void ctx.post.isLiked.invalidate();
     },
   });
   const router = useRouter();
@@ -77,6 +90,18 @@ const Post: FC<PostProps> = ({
 
   function handleUnstar() {
     unstarPost({
+      postId,
+    });
+  }
+
+  function handleLike() {
+    likePost({
+      postId,
+    });
+  }
+
+  function handleUnlike() {
+    unlikePost({
       postId,
     });
   }
@@ -142,7 +167,21 @@ const Post: FC<PostProps> = ({
                   e.stopPropagation();
                 }}
               >
-                <Icons.Heart className="cursor-pointer rounded-full hover:text-red-500" />
+                <Icons.Heart
+                  className={cn(
+                    "cursor-pointer rounded-full hover:text-red-500",
+                    {
+                      "text-red-500": isLiked,
+                    }
+                  )}
+                  onClick={() => {
+                    if (isLiked) {
+                      handleUnlike();
+                    } else {
+                      handleLike();
+                    }
+                  }}
+                />
               </div>
               <div
                 onClick={(e) => {

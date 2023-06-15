@@ -23,6 +23,7 @@ const Feed: FC = () => {
               text={post.text}
               createdAt={post.createdAt}
               userId={session?.user.id as string}
+              bookmark={false}
             />
           </div>
         );

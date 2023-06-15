@@ -59,6 +59,7 @@ model User {
     Post          Post[]
     Bookmarks     Bookmark[]
     bio           String     @default("")
+    likes         Like[]
 }
 
 model VerificationToken {
@@ -75,7 +76,7 @@ model Post {
     text      String   @db.VarChar(255)
     author    User     @relation(fields: [authorId], references: [id])
     authorId  String
-    likes      Int      @default(0)
+    likes     Like[]
 
     @@index([authorId])
 }
@@ -89,4 +90,14 @@ model Bookmark {
     authorId  String
 
     @@index([userId])
+}
+
+model Like {
+    id     String  @id @default(cuid())
+    User   User?   @relation(fields: [userId], references: [id])
+    userId String?
+    Post   Post?   @relation(fields: [postId], references: [id])
+    postId String?
+
+    @@unique([userId, postId])
 }

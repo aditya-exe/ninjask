@@ -16,14 +16,28 @@ export const postRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const authorId = ctx.session.user.id;
 
-      const post = await ctx.prisma.post.create({
-        data: {
-          authorId,
-          text: input.text,
-        },
-      });
+      try {
+        const post = await ctx.prisma.post.create({
+          data: {
+            authorId,
+            text: input.text,
+          },
+        });
 
-      return post;
+        if (!post) {
+          throw new TRPCError({
+            message: "Error creating a post",
+            code: "INTERNAL_SERVER_ERROR",
+          });
+        }
+
+        return post;
+      } catch (err) {
+        throw new TRPCError({
+          message: "Something went wrong",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
     }),
   getAll: publicProcedure.query(async ({ ctx }) => {
     const posts = await ctx.prisma.post.findMany({
@@ -117,17 +131,26 @@ export const postRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      const post = await ctx.prisma.bookmark.findFirst({
-        where: {
-          postId: input.postId,
-          userId: ctx.session.user.id,
-        },
-      });
+      const userId = ctx.session.user.id;
 
-      if (!post) {
-        return false;
+      try {
+        const post = await ctx.prisma.bookmark.findFirst({
+          where: {
+            userId,
+            postId: input.postId,
+          },
+        });
+
+        if (!post) {
+          return false;
+        }
+        return true;
+      } catch (err) {
+        throw new TRPCError({
+          message: "Something went wrong",
+          code: "INTERNAL_SERVER_ERROR",
+        });
       }
-      return true;
     }),
   unstarPost: protectedProcedure
     .input(
@@ -136,13 +159,145 @@ export const postRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // const userId = ctx.session.user.id;
-      const deletedBookmark = await ctx.prisma.bookmark.delete({
-        where: {
-          postId: input.postId,
-        },
-      });
+      const userId = ctx.session.user.id;
 
-      return deletedBookmark;
+      try {
+        const existingStar = await ctx.prisma.bookmark.findFirst({
+          where: {
+            userId,
+            postId: input.postId,
+          },
+        });
+
+        if (!existingStar) {
+          throw new TRPCError({
+            message: "You have not starred this post",
+            code: "BAD_REQUEST",
+          });
+        }
+
+        await ctx.prisma.bookmark.delete({
+          where: {
+            id: existingStar.id,
+          },
+        });
+
+        return {
+          success: true,
+        };
+      } catch (err) {
+        throw new TRPCError({
+          message: "Unable to delete star",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    }),
+  likePost: protectedProcedure
+    .input(
+      z.object({
+        postId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      try {
+        const existingLike = await ctx.prisma.like.findFirst({
+          where: {
+            userId,
+            postId: input.postId,
+          },
+        });
+
+        if (existingLike) {
+          throw new TRPCError({
+            message: "You have already liked this post",
+            code: "BAD_REQUEST",
+          });
+        }
+
+        const like = await ctx.prisma.like.create({
+          data: {
+            userId,
+            postId: input.postId,
+          },
+        });
+
+        return like;
+      } catch (err) {
+        throw new TRPCError({
+          message: "Failed to add like",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    }),
+  unlikePost: protectedProcedure
+    .input(
+      z.object({
+        postId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      try {
+        const existingLike = await ctx.prisma.like.findFirst({
+          where: {
+            userId,
+            postId: input.postId,
+          },
+        });
+
+        if (!existingLike) {
+          throw new TRPCError({
+            message: "You have not liked this post",
+            code: "BAD_REQUEST",
+          });
+        }
+
+        await ctx.prisma.like.delete({
+          where: {
+            id: existingLike.id,
+          },
+        });
+
+        return {
+          success: true,
+        };
+      } catch (err) {
+        return new TRPCError({
+          message: "Failed to remove like",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    }),
+  isLiked: protectedProcedure
+    .input(
+      z.object({
+        postId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      try {
+        const existingLike = await ctx.prisma.like.findFirst({
+          where: {
+            userId,
+            postId: input.postId,
+          },
+        });
+
+        if (!existingLike) {
+          return false;
+        }
+
+        return true;
+      } catch (err) {
+        throw new TRPCError({
+          message: "Something went wrong",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
     }),
 });

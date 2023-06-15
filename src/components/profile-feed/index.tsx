@@ -27,6 +27,7 @@ const ProfileFeed: FC<ProfileFeedProps> = ({ userId }) => {
               text={post.text}
               createdAt={post.createdAt}
               userId={session?.user.id as string}
+              bookmark={false}
             />
           </div>
         );
