@@ -38,10 +38,12 @@ const ShareModal: FC<ShareModalProps> = ({ postId }) => {
   }
 
   return (
-    <div className="flex items-center gap-x-4 dark:text-white">
+    <div>
       <Dialog>
         <DialogTrigger asChild>
-          <Icons.Share2 className="cursor-pointer rounded-full hover:text-blue-700" />
+          <button className="flex cursor-pointer items-center justify-center w-full rounded-r-lg border-2 p-2 hover:text-blue-500">
+            <Icons.Share2 className="cursor-pointer hover:text-blue-500" />
+          </button>
         </DialogTrigger>
 
         <DialogContent>

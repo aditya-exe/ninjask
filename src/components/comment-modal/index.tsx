@@ -2,7 +2,6 @@ import {
   Dialog,
   DialogTrigger,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogFooter,
 } from "../ui/Dialog";
@@ -14,17 +13,24 @@ import { api } from "@/utils/api";
 import LoadingSpinner from "../ui/Loading-Spinner";
 import { Icons } from "../icons";
 
-const CommentModal: FC = () => {
+interface CommentModalProps {
+  postId: string;
+}
+
+const CommentModal: FC<CommentModalProps> = ({ postId }) => {
   const [input, setInput] = useState("");
   const ctx = api.useContext();
-  const { mutate, isLoading } = api.profile.changeBio.useMutation({
-    onSuccess: () => {
-      void ctx.profile.getUserByUsername.invalidate();
-    },
+  const { mutate, isLoading } = api.post.create.useMutation({
+    onSuccess: ()=>{
+      void ctx.post.getAllChildren.invalidate();
+    }
   });
 
   function handleSubmit() {
-    mutate({ text: input });
+    mutate({
+      parentPostId: postId,
+      text: input,
+    });
   }
 
   if (isLoading) {
@@ -35,7 +41,9 @@ const CommentModal: FC = () => {
     <div className="flex items-center gap-x-4 dark:text-white">
       <Dialog>
         <DialogTrigger asChild>
-          <Icons.MessageSquare className="cursor-pointer rounded-full hover:text-[#e62a6f]" />
+          <button className="flex w-full cursor-pointer items-center justify-center rounded-l-lg border-2 p-2 hover:text-pink-500">
+            <Icons.MessageSquare className="cursor-pointer" />
+          </button>
         </DialogTrigger>
 
         <DialogContent>
@@ -49,6 +57,7 @@ const CommentModal: FC = () => {
             <Textarea
               onChange={(e) => setInput(e.target.value)}
               placeholder={"Type here!"}
+              className="text-gray-900 dark:text-white"
             />
           </div>
           <DialogFooter>

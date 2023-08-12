@@ -61,7 +61,7 @@ const CreatePostWizard: FC = () => {
           <Textarea
             {...register("text")}
             placeholder="Type here!"
-            className="grow rounded border-2 border-[#685582] bg-transparent p-2 outline-none placeholder:text-lg text-lg"
+            className=" rounded border-2 max-h-14 border-[#685582] bg-transparent p-2 outline-none placeholder:text-lg text-lg"
             disabled={isPosting}
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -75,7 +75,7 @@ const CreatePostWizard: FC = () => {
             }}
           />
           <Button
-            className={"min-w-[100px] min-h-[60px] p-4 font-bold text-lg tracking-wider"}
+            className={"min-w-[100px] min-h-14 p-4 font-bold text-lg tracking-wider"}
             isLoading={isPosting}
             type="submit"
           >

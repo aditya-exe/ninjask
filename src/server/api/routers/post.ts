@@ -6,21 +6,26 @@ import {
   publicProcedure,
 } from "@/server/api/trpc";
 
+// TODO Error handling
+
 export const postRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
       z.object({
         text: z.string().min(1),
+        parentPostId: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const authorId = ctx.session.user.id;
+      const { text, parentPostId } = input;
 
       try {
         const post = await ctx.prisma.post.create({
           data: {
             authorId,
-            text: input.text,
+            text,
+            parentPost: parentPostId,
           },
         });
 
@@ -40,23 +45,45 @@ export const postRouter = createTRPCRouter({
       }
     }),
   getAll: publicProcedure.query(async ({ ctx }) => {
-    const posts = await ctx.prisma.post.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    try {
+      const posts = await ctx.prisma.post.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          likes: true,
+          author: true,
+          stars: true,
+        },
+      });
 
-    return posts;
+      return posts;
+    } catch (err) {
+      if (err instanceof TRPCError) {
+        throw new TRPCError({
+          code: err.code,
+          message: err.message,
+        });
+      }
+
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Something went wrong :/",
+      });
+    }
   }),
   deleteByPostId: protectedProcedure
     .input(
       z.object({
         postId: z.string(),
         authorId: z.string(),
+        parentPost: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      if (ctx.session.user.id !== input.authorId) {
+      const { postId, authorId, parentPost } = input;
+
+      if (ctx.session.user.id !== authorId) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "UNAUTHORIZED",
@@ -65,31 +92,12 @@ export const postRouter = createTRPCRouter({
 
       const deletedPost = await ctx.prisma.post.delete({
         where: {
-          id: input.postId,
+          id: postId,
+          parentPost,
         },
       });
 
       return deletedPost;
-    }),
-  starPost: protectedProcedure
-    .input(
-      z.object({
-        postId: z.string(),
-        authorId: z.string(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id;
-
-      const star = await ctx.prisma.bookmark.create({
-        data: {
-          postId: input.postId,
-          userId,
-          authorId: input.authorId,
-        },
-      });
-
-      return star;
     }),
   getPostById: publicProcedure
     .input(
@@ -101,6 +109,11 @@ export const postRouter = createTRPCRouter({
       const post = await ctx.prisma.post.findUnique({
         where: {
           id: input.postId,
+        },
+        include: {
+          likes: true,
+          author: true,
+          stars: true,
         },
       });
 
@@ -120,184 +133,94 @@ export const postRouter = createTRPCRouter({
         orderBy: {
           createdAt: "desc",
         },
+        include: {
+          likes: true,
+          author: true,
+          stars: true,
+        },
       });
 
       return posts;
     }),
-  isBookmarked: protectedProcedure
+  getInitialPosts: publicProcedure.query(async ({ ctx }) => {
+    const posts = await ctx.prisma.post.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        likes: true,
+        author: true,
+        stars: true,
+      },
+      take: 3,
+    });
+
+    if (posts.length === 0) {
+      return [];
+    }
+
+    return posts;
+  }),
+  createChild: protectedProcedure
+    .input(
+      z.object({
+        parentPostId: z.string(),
+        text: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { parentPostId, text } = input;
+      const userId = ctx.session.user.id;
+
+      const child = await ctx.prisma.post.create({
+        data: {
+          authorId: userId,
+          text,
+          parentPost: parentPostId,
+        },
+      });
+
+      return child;
+    }),
+  getAllChildren: publicProcedure
+    .input(
+      z.object({
+        parentPostId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { parentPostId } = input;
+
+      const children = await ctx.prisma.post.findMany({
+        where: {
+          parentPost: parentPostId,
+        },
+        include: {
+          likes: true,
+          stars: true,
+          author: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      return children;
+    }),
+  countChildren: publicProcedure
     .input(
       z.object({
         postId: z.string(),
       })
     )
     .query(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id;
+      const { postId } = input;
+      const children = await ctx.prisma.post.count({
+        where: {
+          parentPost: postId,
+        },
+      });
 
-      try {
-        const post = await ctx.prisma.bookmark.findFirst({
-          where: {
-            userId,
-            postId: input.postId,
-          },
-        });
-
-        if (!post) {
-          return false;
-        }
-        return true;
-      } catch (err) {
-        throw new TRPCError({
-          message: "Something went wrong",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
-    }),
-  unstarPost: protectedProcedure
-    .input(
-      z.object({
-        postId: z.string(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id;
-
-      try {
-        const existingStar = await ctx.prisma.bookmark.findFirst({
-          where: {
-            userId,
-            postId: input.postId,
-          },
-        });
-
-        if (!existingStar) {
-          throw new TRPCError({
-            message: "You have not starred this post",
-            code: "BAD_REQUEST",
-          });
-        }
-
-        await ctx.prisma.bookmark.delete({
-          where: {
-            id: existingStar.id,
-          },
-        });
-
-        return {
-          success: true,
-        };
-      } catch (err) {
-        throw new TRPCError({
-          message: "Unable to delete star",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
-    }),
-  likePost: protectedProcedure
-    .input(
-      z.object({
-        postId: z.string(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id;
-
-      try {
-        const existingLike = await ctx.prisma.like.findFirst({
-          where: {
-            userId,
-            postId: input.postId,
-          },
-        });
-
-        if (existingLike) {
-          throw new TRPCError({
-            message: "You have already liked this post",
-            code: "BAD_REQUEST",
-          });
-        }
-
-        const like = await ctx.prisma.like.create({
-          data: {
-            userId,
-            postId: input.postId,
-          },
-        });
-
-        return like;
-      } catch (err) {
-        throw new TRPCError({
-          message: "Failed to add like",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
-    }),
-  unlikePost: protectedProcedure
-    .input(
-      z.object({
-        postId: z.string(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id;
-
-      try {
-        const existingLike = await ctx.prisma.like.findFirst({
-          where: {
-            userId,
-            postId: input.postId,
-          },
-        });
-
-        if (!existingLike) {
-          throw new TRPCError({
-            message: "You have not liked this post",
-            code: "BAD_REQUEST",
-          });
-        }
-
-        await ctx.prisma.like.delete({
-          where: {
-            id: existingLike.id,
-          },
-        });
-
-        return {
-          success: true,
-        };
-      } catch (err) {
-        return new TRPCError({
-          message: "Failed to remove like",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
-    }),
-  isLiked: protectedProcedure
-    .input(
-      z.object({
-        postId: z.string(),
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id;
-
-      try {
-        const existingLike = await ctx.prisma.like.findFirst({
-          where: {
-            userId,
-            postId: input.postId,
-          },
-        });
-
-        if (!existingLike) {
-          return false;
-        }
-
-        return true;
-      } catch (err) {
-        throw new TRPCError({
-          message: "Something went wrong",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return children;
     }),
 });

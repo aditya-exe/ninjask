@@ -9,7 +9,7 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-[#e62a6f] text-[#f6f6f6] hover:bg-pink-800 border-2 border-[#685582] rounded-md",
-        ghost: "bg-transparent hover:text-[#f6f6f6] hover:bg-pink-400",
+        ghost: "bg-transparent  hover:bg-pink-400 hover:text-white dark:hover-text-white",
       },
       size: {
         default: "h-10 py-2 px-4",

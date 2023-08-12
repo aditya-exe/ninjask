@@ -10,6 +10,12 @@ import {
   MessageSquare,
   Share2,
   ClipboardCopy,
+  Check,
+  XCircle,
+  Pencil,
+  X,
+  ArrowLeft,
+  MoreHorizontal,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -34,6 +40,12 @@ export const Icons = {
   Share2,
   MessageSquare,
   ClipboardCopy,
+  tick: Check,
+  cross: XCircle,
+  edit: Pencil,
+  X,
+  back: ArrowLeft,
+  options: MoreHorizontal
 };
 
 export type Icon = keyof typeof Icons;

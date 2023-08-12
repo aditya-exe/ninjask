@@ -42,22 +42,32 @@ export const profileRouter = createTRPCRouter({
         },
       });
 
-      if (!user) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "User not found",
-        });
-      }
+      // if (!user) {
+      //   throw new TRPCError({
+      //     code: "INTERNAL_SERVER_ERROR",
+      //     message: "User not found",
+      //   });
+      // }
 
       return user;
     }),
   getStarsByUser: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
 
-    const stars = await ctx.prisma.bookmark.findMany({
+    const stars = await ctx.prisma.star.findMany({
       where: {
         userId,
       },
+      include: {
+        user: true,
+        post: {
+          include: {
+            author: true,
+            likes: true,
+            stars: true
+          }
+        },
+      }
     });
 
     return stars;
@@ -76,9 +86,9 @@ export const profileRouter = createTRPCRouter({
         },
       });
 
-      // if (!user) {
-      //   return new TRPCError({ code: "BAD_REQUEST" });
-      // }
+      if (!user) {
+        throw new TRPCError({ code: "BAD_REQUEST" });
+      }
 
       return user;
     }),
@@ -101,4 +111,57 @@ export const profileRouter = createTRPCRouter({
 
       return bio;
     }),
+  changeProfilePicture: protectedProcedure
+    .input(z.object({
+      currentUser: z.string(),
+      newImage: z.string()
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      if (userId !== input.currentUser) {
+        throw new TRPCError({ code: "UNAUTHORIZED" });
+      }
+
+      await ctx.prisma.user.update({
+        where: {
+          id: userId
+        },
+        data: {
+          image: input.newImage
+        }
+      });
+    }),
+  checkUsername: protectedProcedure
+    .input(z.object({
+      newUsername: z.string().min(3).max(10),
+    }))
+    .query(async ({ ctx, input }) => {
+      const existingUsername = await ctx.prisma.user.findFirst({
+        where: {
+          name: input.newUsername
+        }
+      });
+
+      if (existingUsername) {
+        return false;
+      }
+
+      return true;
+    }),
+  changeUsername: protectedProcedure
+    .input(z.object({
+      newUsername: z.string()
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      await ctx.prisma.user.update({
+        where: {
+          id: userId
+        },
+        data: {
+          name: input.newUsername
+        }
+      })
+    })
 });

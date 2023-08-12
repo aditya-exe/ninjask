@@ -3,11 +3,12 @@ import Link from "next/link";
 import { Icons } from "../icons";
 import { type SidebarOption } from "@/types";
 import Button from "../ui/Button";
-import { signOut, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import LoadingSpinner from "../ui/Loading-Spinner";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import LightModeToggle from "../ui/light-mode-toggle";
+import toast from "react-hot-toast";
 
 interface SidebarProps {
   username: string | null | undefined;
@@ -42,8 +43,17 @@ const Sidebar: FC<SidebarProps> = ({ username }) => {
     return <LoadingSpinner />;
   }
 
+  function handleSignIn() {
+    try {
+      void signIn("discord");
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong, try again :/");
+    }
+  }
+
   return (
-    <div className="flex min-h-screen w-[450px] flex-col ">
+    <div className="flex fixed inset-y-0 w-[450px] flex-col ">
       <Link
         href="/"
         className="flex h-[101.5px] items-center gap-x-4 border-b-2 border-[#685582] p-4"
@@ -80,10 +90,13 @@ const Sidebar: FC<SidebarProps> = ({ username }) => {
               );
             })}
           {!username && (
-            <div className="flex h-full w-full items-center justify-center">
+            <div className="flex flex-col h-full w-full items-center justify-center">
               <p className="text-xl font-bold">
                 Sign In to access all features
               </p>
+              <div className="rounded p-2 text-white">
+                <Button onClick={handleSignIn}>Sign In</Button>
+              </div>
             </div>
           )}
         </ul>

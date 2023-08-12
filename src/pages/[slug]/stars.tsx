@@ -3,13 +3,12 @@ import Post from "@/components/post-view";
 import Sidebar from "@/components/sidebar";
 import LoadingSpinner from "@/components/ui/Loading-Spinner";
 import { api } from "@/utils/api";
-import { type Bookmark } from "@prisma/client";
 import { type NextPage } from "next";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 
-const StarsPage: NextPage = ({}) => {
+const StarsPage: NextPage = ({ }) => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { slug } = router.query;
@@ -39,8 +38,8 @@ const StarsPage: NextPage = ({}) => {
 
           {stars?.map((star) => {
             return (
-              <div className="p-4" key={star.id}>
-                <StarredPost star={star} />
+              <div className="p-4" key={star.postId}>
+                <Post post={star.post} />
               </div>
             );
           })}
@@ -51,27 +50,3 @@ const StarsPage: NextPage = ({}) => {
 };
 
 export default StarsPage;
-
-const StarredPost = ({ star }: { star: Bookmark }) => {
-  const { data: post, isLoading } = api.post.getPostById.useQuery({
-    postId: star.postId,
-  });
-
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  if (!post) {
-    return <div />;
-  }
-
-  return (
-    <Post
-      text={post.text}
-      authorId={post.authorId}
-      postId={star.postId}
-      createdAt={post.createdAt}
-      bookmark={true}
-    />
-  );
-};

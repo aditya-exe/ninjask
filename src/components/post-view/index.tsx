@@ -1,108 +1,42 @@
-import { api } from "@/utils/api";
 import { type FC } from "react";
-import LoadingSpinner from "../ui/Loading-Spinner";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { Icons } from "../icons";
-import { useSession } from "next-auth/react";
 import relativeTime from "dayjs/plugin/relativeTime";
 import dayjs from "dayjs";
-import { cn } from "@/utils";
-import CommentModal from "../comment-modal";
-import ShareModal from "../share-modal";
+import { Post } from "@prisma/client";
+import type { Like, User, Star } from "@prisma/client";
+import OptionsStrip from "../options-strip";
+import { Icons } from "../icons";
+import { useSession } from "next-auth/react";
+import { api } from "@/utils/api";
 
 dayjs.extend(relativeTime);
 
 interface PostProps {
-  postId: string;
-  text: string;
-  authorId: string;
-  createdAt: Date;
-  userId?: string;
-  bookmark: boolean;
+  post: Post & {
+    author: User;
+    likes: Like[];
+    stars: Star[];
+  };
 }
 
-const Post: FC<PostProps> = ({
-  authorId,
-  text,
-  createdAt,
-  postId,
-  bookmark,
-}) => {
-  const ctx = api.useContext();
-  const { data, isLoading } = api.profile.getUserByUserId.useQuery({
-    userId: authorId,
-  });
-  const { data: isBookmarked } = api.post.isBookmarked.useQuery({
-    postId,
-  });
-  const { data: isLiked } = api.post.isLiked.useQuery({
-    postId,
-  });
-  const { mutate: deletePost } = api.post.deleteByPostId.useMutation({
-    onSuccess: () => {
-      void ctx.post.getAll.invalidate();
-    },
-  });
-  const { mutate: starPost } = api.post.starPost.useMutation({
-    onSuccess: () => {
-      // void ctx.post.getAll.invalidate();
-      void ctx.post.isBookmarked.invalidate();
-    },
-  });
-  const { mutate: unstarPost } = api.post.unstarPost.useMutation({
-    onSuccess: () => {
-      void ctx.profile.getStarsByUser.invalidate();
-      void ctx.post.isBookmarked.invalidate();
-    },
-  });
-  const { mutate: likePost } = api.post.likePost.useMutation({
-    onSuccess: () => {
-      void ctx.post.isLiked.invalidate();
-    },
-  });
-  const { mutate: unlikePost } = api.post.unlikePost.useMutation({
-    onSuccess: () => {
-      void ctx.post.isLiked.invalidate();
-    },
-  });
+const Post: FC<PostProps> = ({ post }) => {
   const router = useRouter();
   const { data: session } = useSession();
+  const author = post.author;
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
+  const { mutate: deletePost } = api.post.deleteByPostId.useMutation({
+    onMutate: () => {
+      router.reload();
+      router.back();
+    },
+  });
 
-  function handleDeletePost() {
+  function handleDelete(): void {
     deletePost({
-      authorId,
-      postId,
-    });
-  }
-
-  function handleStar() {
-    starPost({
-      postId,
-      authorId,
-    });
-  }
-
-  function handleUnstar() {
-    unstarPost({
-      postId,
-    });
-  }
-
-  function handleLike() {
-    likePost({
-      postId,
-    });
-  }
-
-  function handleUnlike() {
-    unlikePost({
-      postId,
+      postId: post?.id ?? "",
+      authorId: author.id,
     });
   }
 
@@ -113,7 +47,7 @@ const Post: FC<PostProps> = ({
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        void router.push(`/post/${postId}`);
+        void router.push(`/post/${post.id}`);
       }}
     >
       <div
@@ -121,111 +55,71 @@ const Post: FC<PostProps> = ({
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          void router.push(`/${data?.name as string}`);
+          void router.push(`/${author.name as string}`);
         }}
       >
         <Image
-          src={data?.image as string}
+          src={author.image as string}
           alt="Profile Image"
           className="h-14 w-14 cursor-pointer rounded-full ring-2 ring-[#e62a6f]"
           height={56}
           width={56}
           onClick={() => {
-            void router.push(`/${data?.name as string}`);
+            void router.push(`/${author.name as string}`);
           }}
         />
       </div>
       <div className="flex grow flex-col gap-y-2">
-        <div className="flex items-center">
-          <Link
-            href={`/${data?.name as string}`}
-            className="text-lg font-bold"
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-          >
-            {`@${data?.name as string} `}
-          </Link>
-          <span className="font-thin">{` · ${dayjs(
-            createdAt
-          ).fromNow()}`}</span>
-        </div>
-        <p className="text-lg">{text}</p>
-
-        <div className="mt-1 flex justify-end gap-x-4">
-          {session && (
-            <>
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-              >
-                <CommentModal />
-              </div>
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-              >
-                <Icons.Heart
-                  className={cn(
-                    "cursor-pointer rounded-full hover:text-red-500",
-                    {
-                      "text-red-500": isLiked,
-                    }
-                  )}
-                  onClick={() => {
-                    if (isLiked) {
-                      handleUnlike();
-                    } else {
-                      handleLike();
-                    }
-                  }}
-                />
-              </div>
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-              >
-                <Icons.Star
-                  className={cn(
-                    "cursor-pointer rounded-full hover:text-yellow-600 ",
-                    {
-                      "text-yellow-600": isBookmarked,
-                    }
-                  )}
-                  onClick={() => {
-                    if (bookmark || isBookmarked) {
-                      handleUnstar();
-                    } else {
-                      handleStar();
-                    }
-                  }}
-                />
-              </div>
-            </>
-          )}
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-          >
-            <ShareModal postId={postId} />
-          </div>
-          {session?.user.id === authorId && (
-            <div
+        <div className="flex items-center justify-between">
+          <div>
+            <Link
+              href={`/${author.name as string}`}
+              className="text-lg font-bold"
               onClick={(e) => {
                 e.stopPropagation();
               }}
             >
-              <Icons.Trash2
-                className="cursor-pointer hover:text-red-700"
-                onClick={handleDeletePost}
-              />
+              {`@${author.name as string} `}
+            </Link>
+            <span className="font-thin">
+              {"\t"}• {`${dayjs(post.createdAt).fromNow()}`}
+            </span>
+          </div>
+          <div
+            className="group relative inline-block"
+            tabIndex={-1}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            <button
+              type="button"
+              className="active:shadow-outline-pink inline-flex cursor-pointer rounded-full p-2 focus-within:border-transparent focus-within:text-[#685582] focus-within:outline focus-within:outline-2 focus-within:outline-[#685582] hover:text-[#685582]"
+            >
+              <Icons.options />
+            </button>
+            <div className="invisible origin-top-right -translate-y-2 scale-95 transform opacity-0 transition-all duration-300 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:scale-100 group-focus-within:opacity-100 dark:bg-gray-900 dark:text-white">
+              <div
+                className="absolute right-0 mt-2 w-56 origin-top-right divide-y divide-[#685582] rounded-md border border-[#685582] bg-white shadow-lg outline-none dark:bg-gray-900"
+                role="menu"
+              >
+                <div className="py-1">
+                  <button
+                    className="flex w-full justify-between px-4 py-2 text-left text-sm font-bold leading-5 text-red-500 focus-visible:outline-1 focus-visible:outline-pink-500 disabled:cursor-not-allowed"
+                    role="menuitem"
+                    disabled={session?.user.id !== post.authorId}
+                    onClick={handleDelete}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
             </div>
-          )}
+          </div>
         </div>
+        <p className="text-lg">{post.text}</p>
+
+        <OptionsStrip postId={post.id} showModal={false} showNumbers={true} />
       </div>
     </div>
   );

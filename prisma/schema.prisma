@@ -2,8 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider        = "prisma-client-js"
-    previewFeatures = ["jsonProtocol"]
+    provider = "prisma-client-js"
 }
 
 datasource db {
@@ -15,12 +14,6 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-}
-
 // Necessary for Next auth
 model Account {
     id                String  @id @default(cuid())
@@ -28,12 +21,12 @@ model Account {
     type              String
     provider          String
     providerAccountId String
-    refresh_token     String? // @db.Text
-    access_token      String? // @db.Text
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
     expires_at        Int?
     token_type        String?
     scope             String?
-    id_token          String? // @db.Text
+    id_token          String? @db.Text
     session_state     String?
     user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -49,17 +42,19 @@ model Session {
 }
 
 model User {
-    id            String     @id @default(cuid())
+    id            String         @id @default(cuid())
+    createdAt     DateTime       @default(now())
     name          String?
-    email         String?    @unique
+    email         String?        @unique
     emailVerified DateTime?
     image         String?
     accounts      Account[]
     sessions      Session[]
-    Post          Post[]
-    Bookmarks     Bookmark[]
-    bio           String     @default("")
+    posts         Post[]
+    stars         Star[]
+    bio           String         @default("")
     likes         Like[]
+    // comments      Comment[]
 }
 
 model VerificationToken {
@@ -71,33 +66,52 @@ model VerificationToken {
 }
 
 model Post {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    text      String   @db.VarChar(255)
-    author    User     @relation(fields: [authorId], references: [id])
+    id        String    @id @default(cuid())
+    text      String
+    createdAt DateTime  @default(now())
+    author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
     authorId  String
     likes     Like[]
+    // comments  Comment[]
+    stars     Star[]
+
+    parentPost String?
+    childrenTo Post?   @relation("ChildrenTo", fields: [parentPost], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    children   Post[]  @relation("ChildrenTo")
 
     @@index([authorId])
 }
 
-model Bookmark {
-    id        String   @id @default(cuid())
+model Star {
     createdAt DateTime @default(now())
-    User      User?    @relation(fields: [userId], references: [id])
-    userId    String?
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId    String
+    post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
     postId    String   @unique
-    authorId  String
 
+    @@id([userId, postId])
     @@index([userId])
 }
 
 model Like {
-    id     String  @id @default(cuid())
-    User   User?   @relation(fields: [userId], references: [id])
-    userId String?
-    Post   Post?   @relation(fields: [postId], references: [id])
-    postId String?
+    createdAt DateTime @default(now())
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId    String
+    post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+    postId    String
 
-    @@unique([userId, postId])
+    @@id([userId, postId])
+    @@index([userId])
 }
+
+// model Comment {
+//     id        String   @id @default(cuid())
+//     text      String
+//     createdAt DateTime @default(now())
+//     author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+//     authorId  String
+//     post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+//     postId    String
+
+//     @@index([authorId, postId])
+// }

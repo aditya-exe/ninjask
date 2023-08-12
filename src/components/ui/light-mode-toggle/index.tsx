@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Switch } from "../Switch";
-import { Sun, MoonStar } from "lucide-react";
 import useDarkMode from "@/utils/useDarkMode";
+import { Icons } from "@/components/icons";
 
 const ThemeSwitch = () => {
   const [darkTheme, setDarkTheme] = useDarkMode();
@@ -12,13 +12,13 @@ const ThemeSwitch = () => {
 
   return (
     <div className="flex items-center gap-x-2">
-      <Sun />
+      <Icons.Sun />
       <Switch
         checked={darkTheme}
         onCheckedChange={handleMode}
         className={`${darkTheme ? "bg-blue-900" : "bg-orange-700"}`}
       />
-      <MoonStar />
+      <Icons.Star />
     </div>
   );
 };
